@@ -135,6 +135,7 @@ namespace FoxLauncher
                     UpdateRichTextBoxAsync($"Установлен путь '{folderDialog.SelectedPath}' и сохранено значение в памяти");
                     Properties.Settings.Default.LastSelectedFolderPath = folderDialog.SelectedPath;
                     textBlockDir.Text = folderDialog.SelectedPath;
+                    Properties.Settings.Default.Save();
                 }
                 else
                 {

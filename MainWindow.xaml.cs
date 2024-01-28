@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
@@ -7,18 +7,13 @@ using System.Windows.Controls;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Downloader;
-using CmlLib.Core.Files;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionLoader;
 using CmlLib.Core.VersionMetadata;
 
 
 namespace FoxLauncher
-{
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    
+{   
     public partial class MainWindow : Window
     {
         private static MainWindow? Instance;
@@ -28,6 +23,7 @@ namespace FoxLauncher
 
         IDownloader downloaderSec = new SequenceDownloader();
         string clients = Path.Combine(Environment.CurrentDirectory, "clients.txt");
+        string url = "ВВЕДИТЕ АДРЕС ЗАГРЗУЗКИ";
 
 
         public MainWindow()
@@ -104,6 +100,11 @@ namespace FoxLauncher
             {
                 UpdateRichTextBoxAsync($"Установка выбранного клиента - {Properties.Settings.Default.LastSelectedClient}");
                 textBlockVer.Text = Properties.Settings.Default.LastSelectedClient;
+            } 
+            if (Properties.Settings.Default.LastSelectedClient == "")
+            {
+                buttonStartNoUpdate.Width = 0;
+                buttonStartUpdate.Width = 0;
             }
             // Загрузка никнейма
             if (string.IsNullOrEmpty(Properties.Settings.Default.LastEnteredNickname))
@@ -162,7 +163,7 @@ namespace FoxLauncher
             try
             {
                 LoadSettings();
-                DownloadFile[] files = { new DownloadFile(clients, "http://92.255.108.96/clients.txt") };
+                DownloadFile[] files = { new DownloadFile(clients, $"{url}/clients.txt") };
                 await downloaderSec.DownloadFiles(files, downloadProgress, fileProgress);
 
                 if (System.IO.File.Exists(clients))
@@ -358,11 +359,11 @@ namespace FoxLauncher
             }
         }
 
-        static long GetWebFileSize(string url)
+        static long GetWebFileSize(string url0)
         {
             try
             {
-                WebRequest request = WebRequest.Create(url);
+                WebRequest request = WebRequest.Create(url0);
                 request.Method = "HEAD";
                 using (WebResponse response = request.GetResponse())
                 {
@@ -381,7 +382,7 @@ namespace FoxLauncher
             if (textBlockDir.Text != "" && textBlockVer.Text != "")
             {
                 string dirArchive = Path.Combine(textBlockDir.Text, $"{textBlockVer.Text}/data");
-                string url = "http://92.255.108.96/ftb/";
+                string url1 = $"{url}/ftb/";
 
                 List<DownloadFile> filesToDownload = new List<DownloadFile>();
 
@@ -402,7 +403,7 @@ namespace FoxLauncher
 
                 foreach (var fileName in fileNames)
                 {
-                    string fileUrl = $"{url}{textBlockVer.Text}/{fileName}";
+                    string fileUrl = $"{url1}{textBlockVer.Text}/{fileName}";
                     string localFilePath = Path.Combine(dirArchive, fileName);
 
                     if (!System.IO.File.Exists(localFilePath))
@@ -432,12 +433,12 @@ namespace FoxLauncher
                 if (!System.IO.File.Exists(Path.Combine(textBlockDir.Text, textBlockVer.Text, "games", "options.txt")))
                 {
                     string OptlocalFilePath = Path.Combine(Path.Combine(textBlockDir.Text, textBlockVer.Text, "games", "options.txt"));
-                    string fileUrlOpt = $"{url}{textBlockVer.Text}/options.txt";
+                    string fileUrlOpt = $"{url1}{textBlockVer.Text}/options.txt";
                     DownloadFile[] opt = { new DownloadFile(OptlocalFilePath, fileUrlOpt) };
                     await downloaderSec.DownloadFiles(opt, downloadProgress, fileProgress);
                 }
                 string ServlocalFilePath = Path.Combine(Path.Combine(textBlockDir.Text, textBlockVer.Text, "games", "servers.dat"));
-                string ServUrlOpt = $"{url}{textBlockVer.Text}/servers.txt";
+                string ServUrlOpt = $"{url1}{textBlockVer.Text}/servers.txt";
                 DownloadFile[] file = { new DownloadFile(ServlocalFilePath, ServUrlOpt) };
                 await downloaderSec.DownloadFiles(file, downloadProgress, fileProgress);
                 bool work = true;
@@ -565,6 +566,9 @@ namespace FoxLauncher
 
                     // Показать нужные элементы
                     ShowTabItem("Выбор клиента");
+                    buttonStartNoUpdate.Width = 154;
+                    buttonStartUpdate.Width = 149;
+                    
 
                 }
                 catch (Exception ex)
